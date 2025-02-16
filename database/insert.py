@@ -22,7 +22,7 @@ def insert_container(container_name):
 
 def insert_chapter(container_name, chapter_name, image_names):
     """
-    Insert a chapter and its images into the database.
+    Insert a chapter and its images into the database. Overwrite if the chapter already exists.
 
     :param container_name: Name of the container
     :param chapter_name: Name of the chapter
@@ -41,7 +41,10 @@ def insert_chapter(container_name, chapter_name, image_names):
     cursor.execute("SELECT id FROM chapters WHERE container_id = ? AND name = ?", (container_id[0], chapter_name))
     chapter = cursor.fetchone()
     if chapter is not None:
-        raise ValueError(f"Chapter '{chapter_name}' already exists in the container '{container_name}'.")
+        # Delete the existing chapter and its images
+        chapter_id = chapter[0]
+        cursor.execute("DELETE FROM images WHERE chapter_id = ?", (chapter_id,))
+        cursor.execute("DELETE FROM chapters WHERE id = ?", (chapter_id,))
 
     # Insert the chapter
     cursor.execute("INSERT INTO chapters (container_id, name) VALUES (?, ?)", (container_id[0], chapter_name))
@@ -49,10 +52,7 @@ def insert_chapter(container_name, chapter_name, image_names):
 
     # Insert the images
     for image_name in image_names:
-        # Check if the image already exists
-        cursor.execute("SELECT id FROM images WHERE chapter_id = ? AND name = ?", (chapter_id, image_name))
-        if cursor.fetchone() is None:
-            cursor.execute("INSERT INTO images (chapter_id, name) VALUES (?, ?)", (chapter_id, image_name))
+        cursor.execute("INSERT INTO images (chapter_id, name) VALUES (?, ?)", (chapter_id, image_name))
 
     conn.commit()
     conn.close()

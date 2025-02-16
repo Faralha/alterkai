@@ -55,6 +55,7 @@ def select_all_chapters(container_name):
   JOIN chapters ON images.chapter_id = chapters.id
   JOIN containers ON chapters.container_id = containers.id
   WHERE containers.name = ?
+  ORDER BY chapters.name ASC
   ''', (container_name,))
 
   chapters = {}

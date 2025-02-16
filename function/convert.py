@@ -7,18 +7,52 @@ from tqdm import tqdm
 def convert_image(file_path, temp_dir, compression_ratio):
     """
     Convert a single image to WebP format with the specified compression ratio.
+    If the image exceeds WebP limits, cut it into multiple pieces.
     """
     image = Image.open(file_path)
 
     # Resize image if it exceeds WebP limits
     max_size = 16383
     if image.width > max_size or image.height > max_size:
-        new_size = (min(image.width, max_size), min(image.height, max_size))
-        image.thumbnail(new_size, Image.ANTIALIAS)
+        pieces = []
+        if image.width > max_size:
+            # Cut the image into vertical pieces
+            num_pieces = (image.width // max_size) + 1
+            for i in range(num_pieces):
+                left = i * max_size
+                right = min((i + 1) * max_size, image.width)
+                piece = image.crop((left, 0, right, image.height))
+                pieces.append(piece)
+        elif image.height > max_size:
+            # Cut the image into horizontal pieces
+            num_pieces = (image.height // max_size) + 1
+            for i in range(num_pieces):
+                top = i * max_size
+                bottom = min((i + 1) * max_size, image.height)
+                piece = image.crop((0, top, image.width, bottom))
+                pieces.append(piece)
+        else:
+            # Cut the image into both vertical and horizontal pieces
+            num_pieces_width = (image.width // max_size) + 1
+            num_pieces_height = (image.height // max_size) + 1
+            for i in range(num_pieces_width):
+                for j in range(num_pieces_height):
+                    left = i * max_size
+                    right = min((i + 1) * max_size, image.width)
+                    top = j * max_size
+                    bottom = min((j + 1) * max_size, image.height)
+                    piece = image.crop((left, top, right, bottom))
+                    pieces.append(piece)
 
-    webp_filename = os.path.splitext(os.path.basename(file_path))[0] + '.webp'
-    webp_path = os.path.join(temp_dir, webp_filename)
-    image.save(webp_path, 'webp', quality=compression_ratio)
+        # Save each piece as a separate WebP file
+        for index, piece in enumerate(pieces, start=1):
+            webp_filename = f"{os.path.splitext(os.path.basename(file_path))[0]}-{index:02d}.webp"
+            webp_path = os.path.join(temp_dir, webp_filename)
+            piece.save(webp_path, 'webp', quality=compression_ratio)
+    else:
+        webp_filename = os.path.splitext(os.path.basename(file_path))[0] + '.webp'
+        webp_path = os.path.join(temp_dir, webp_filename)
+        image.save(webp_path, 'webp', quality=compression_ratio)
 
 def convert_images_to_webp(input_dir, compression_ratio):
     """
