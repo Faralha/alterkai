@@ -8,9 +8,15 @@ import pyperclip
 from function.convert import convert_images_to_webp
 from function.rename import rename_images
 from function.upload import upload_to_azure_blob
+from database.insert import insert_container, insert_chapter
+from database.select import select_containers
+from database.index import initialize_database
 
 # Load environment variables from .env file
 load_dotenv()
+
+# initialize database
+initialize_database()
 
 def extract_chapter_number(folder_name):
     """
@@ -73,18 +79,10 @@ def select_multiple_folders():
 
 def select_folder_and_convert():
     root = tk.Tk()
-    root.withdraw()  # Hide the root window
+    root.withdraw()
     
     # Key-value pair for containers name
-    container = [
-        'artificialtemp',
-        'gunbured',
-        'jkharu',
-        'mahoako',
-        'teisougyakuten',
-        'thnn',
-        'myfoodcute'
-    ]
+    container = select_containers()
 
     # Prompt if multiple or single chapter
     print("===== Single or Multiple Chapter? =====")
@@ -102,6 +100,7 @@ def select_folder_and_convert():
     print("5. Teisou Gyakuten")
     print("6. Tatoe Hai ni Nattemo")
     print("7. My Food Looks Very Cute")
+    print("8. Assassin and Cinderella")
     print("========================")
     title = int(input("Enter the title number: ")) - 1
     container_name = container[title]
@@ -110,14 +109,14 @@ def select_folder_and_convert():
     if chapter_type == 0:  # Single chapter
         folder_selected = filedialog.askdirectory()
         if folder_selected:
-            compression_ratio = 80  # You can change this value or prompt the user for it
+            compression_ratio = 60 
             process_chapter(folder_selected, container_name, compression_ratio)
         else:
             print("No folder selected.")
     else:  # Multiple chapters
         folders_selected = select_multiple_folders()
         if folders_selected:
-            compression_ratio = 80  # You can change this value or prompt the user for it
+            compression_ratio = 60 
             for folder_selected in folders_selected:
                 if os.path.isdir(folder_selected):
                     process_chapter(folder_selected, container_name, compression_ratio)

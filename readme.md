@@ -16,4 +16,6 @@ Pyton 3.13.2
 
 3. Upload ke Azure blob container
 
-4. Generate link URL Gambar ke container
+4. Save nama blob beserta chapter dan container ke SQLite
+
+5. Generate URL img tag berdasarkan SQLite

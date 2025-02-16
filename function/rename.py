@@ -1,5 +1,6 @@
 import os
 import re
+from tqdm import tqdm
 
 def natural_sort_key(s):
     """
@@ -21,14 +22,11 @@ def rename_images(temp_dir, chapter):
     images = [f for f in os.listdir(temp_dir) if f.lower().endswith('.webp')]
     images.sort(key=natural_sort_key)  # Ensure the images are sorted naturally
 
-    for index, filename in enumerate(images, start=1):
+    for index, filename in enumerate(tqdm(images, desc="Renaming images", unit="image"), start=1):
         new_filename = f"{chapter:02d}-{index:02d}.webp"
         old_path = os.path.join(temp_dir, filename)
         new_path = os.path.join(temp_dir, new_filename)
         os.rename(old_path, new_path)
-        print(f"Renamed {filename} to {new_filename}")
-
-# dont forget to delete temp folder in the end
 
 # Example usage:
 # temp_dir = '/path/to/temp/dir'
