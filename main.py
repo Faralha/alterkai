@@ -45,15 +45,16 @@ def process_chapter(folder_selected, container_name, compression_ratio):
     rename_images(temp_dir, chapter)
 
     # Upload images to Azure Blob Storage
+    image_names = []
     for filename in os.listdir(temp_dir):
         if filename.lower().endswith('.webp'):
             blob_name = f"{filename}"
             file_path = os.path.join(temp_dir, filename)
             upload_to_azure_blob(container_name, blob_name, file_path)
+            image_names.append(blob_name)
 
-    # Copy the temporary directory path to the clipboard
-    # pyperclip.copy(temp_dir)
-    # print(f"Temporary directory path '{temp_dir}' copied to clipboard.")
+    # Insert into SQLite database
+    insert_chapter(container_name, chapter, image_names)
 
     # Clean up the temporary directory
     shutil.rmtree(temp_dir)
